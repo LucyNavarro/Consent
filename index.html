@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Photography Consent Form</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      background: #F5F5F5;
+      padding: 20px;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      text-align: center;
+      color: #2C3E50;
+      font-size: 24px;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 30px;
+    }
+
+    .section {
+      margin-bottom: 25px;
+    }
+
+    .section-title {
+      font-weight: 600;
+      color: #2C3E50;
+      margin-bottom: 12px;
+      font-size: 16px;
+    }
+
+    .consent-text {
+      color: #333;
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+
+    ul {
+      margin-left: 20px;
+      color: #333;
+      font-size: 14px;
+    }
+
+    ul li {
+      margin-bottom: 8px;
+    }
+
+    .divider {
+      height: 1px;
+      background: #E0E0E0;
+      margin: 25px 0;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-weight: 500;
+      color: #2C3E50;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    input[type="text"],
+    input[type="date"] {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #D0D0D0;
+      border-radius: 4px;
+      font-size: 16px;
+      font-family: inherit;
+    }
+
+    input[type="text"]:focus,
+    input[type="date"]:focus {
+      outline: none;
+      border-color: #4A90A4;
+    }
+
+    .signature-pad {
+      border: 2px solid #D0D0D0;
+      border-radius: 4px;
+      background: white;
+      cursor: crosshair;
+      touch-action: none;
+      width: 100%;
+      height: 200px;
+    }
+
+    .signature-controls {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    button {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.2s;
+    }
+
+    .btn-clear {
+      background: #E0E0E0;
+      color: #333;
+      flex: 1;
+    }
+
+    .btn-clear:hover {
+      background: #D0D0D0;
+    }
+
+    .btn-submit {
+      background: #4A90A4;
+      color: white;
+      flex: 2;
+    }
+
+    .btn-submit:hover {
+      background: #3A7A8A;
+    }
+
+    .btn-submit:disabled {
+      background: #CCC;
+      cursor: not-allowed;
+    }
+
+    .footer {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #E0E0E0;
+      color: #666;
+      font-size: 13px;
+      text-align: center;
+    }
+
+    .footer strong {
+      color: #2C3E50;
+    }
+
+    .footer a {
+      color: #4A90A4;
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    .success-message {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      border: 2px solid #4A90A4;
+      color: #2C3E50;
+      padding: 30px 40px;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      display: none;
+      text-align: center;
+      z-index: 1000;
+      max-width: 90%;
+    }
+
+    .success-message.show {
+      display: block;
+    }
+
+    .success-icon {
+      font-size: 48px;
+      color: #4A90A4;
+      margin-bottom: 15px;
+    }
+
+    .success-text {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .success-subtext {
+      font-size: 14px;
+      color: #666;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      z-index: 999;
+    }
+
+    .overlay.show {
+      display: block;
+    }
+
+    /* Hidden PDF content */
+    #pdfContent {
+      position: absolute;
+      left: -9999px;
+      width: 700px;
+      background: white;
+      padding: 40px;
+      font-family: Arial, sans-serif;
+    }
+
+    #pdfContent h2 {
+      text-align: center;
+      margin-bottom: 10px;
+      font-size: 20px;
+    }
+
+    #pdfContent .pdf-section {
+      margin: 20px 0;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    #pdfContent .pdf-field {
+      margin: 15px 0;
+      font-size: 13px;
+    }
+
+    #pdfContent .pdf-signature {
+      margin-top: 20px;
+      border-top: 1px solid #333;
+      padding-top: 10px;
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 20px;
+      }
+
+      h1 {
+        font-size: 20px;
+      }
+
+      .signature-controls {
+        flex-direction: column;
+      }
+
+      button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay" id="overlay"></div>
+  
+  <div class="success-message" id="successMessage">
+    <div class="success-icon">✓</div>
+    <div class="success-text">Consent Saved!</div>
+    <div class="success-text">同意書が保存されました！</div>
+    <div class="success-subtext">PDF downloaded to your device<br>デバイスにPDFがダウンロードされました</div>
+  </div>
+
+  <div class="container">
+    <h1>Photography Consent Form</h1>
+    <p class="subtitle">写真撮影同意書</p>
+
+    <!-- English Section -->
+    <div class="section">
+      <div class="section-title">ENGLISH</div>
+      <p class="consent-text">I consent to being photographed by Lucy Navarro as part of her architectural research fieldwork in the Seto Inland Sea, Japan.</p>
+      <p class="consent-text">I understand that:</p>
+      <ul>
+        <li>Photographs may be used for academic research, publications, presentations, and exhibitions</li>
+        <li>I may request to see the photographs before publication by contacting: alucynavarro@gmail.com</li>
+        <li>I may withdraw this consent by contacting the researcher within 30 days</li>
+        <li>Photographs will be stored securely and used respectfully</li>
+      </ul>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Japanese Section -->
+    <div class="section">
+      <div class="section-title">日本語</div>
+      <p class="consent-text">私は、日本の瀬戸内海における建築研究フィールドワークの一環として、Lucy Navarroによる写真撮影に同意します。</p>
+      <p class="consent-text">以下を理解しています：</p>
+      <ul>
+        <li>写真は学術研究、出版物、プレゼンテーション、展示会に使用される可能性があります</li>
+        <li>alucynavarro@gmail.comに連絡することで、出版前に写真を確認することができます</li>
+        <li>30日以内に研究者に連絡することで、この同意を撤回できます</li>
+        <li>写真は安全に保管され、敬意を持って使用されます</li>
+      </ul>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Form Fields -->
+    <form id="consentForm">
+      <div class="form-group">
+        <label for="name">Name / 名前 *</label>
+        <input type="text" id="name" required placeholder="Full name / フルネーム">
+      </div>
+
+      <div class="form-group">
+        <label for="date">Date / 日付 *</label>
+        <input type="date" id="date" required>
+      </div>
+
+      <div class="form-group">
+        <label>Signature / 署名 *</label>
+        <canvas id="signaturePad" class="signature-pad" width="540" height="200"></canvas>
+        <div class="signature-controls">
+          <button type="button" class="btn-clear" id="clearBtn">Clear / クリア</button>
+          <button type="submit" class="btn-submit" id="submitBtn" disabled>Save Consent / 同意を保存</button>
+        </div>
+      </div>
+    </form>
+
+    <div class="footer">
+      <strong>Researcher / 研究者:</strong> Lucy Navarro<br>
+      Columbia University GSAPP<br>
+      <a href="https://islandinfrastructure.io" target="_blank">islandinfrastructure.io</a><br>
+      <strong>Contact / 連絡先:</strong> alucynavarro@gmail.com
+    </div>
+  </div>
+
+  <!-- Hidden PDF content for rendering -->
+  <div id="pdfContent">
+    <h2>PHOTOGRAPHY CONSENT FORM</h2>
+    <h2>写真撮影同意書</h2>
+    
+    <div class="pdf-section">
+      <strong>ENGLISH</strong><br><br>
+      I consent to being photographed by Lucy Navarro as part of her architectural research fieldwork in the Seto Inland Sea, Japan.<br><br>
+      I understand that:<br>
+      • Photographs may be used for academic research, publications, presentations, and exhibitions<br>
+      • I may request to see photographs before publication: alucynavarro@gmail.com<br>
+      • I may withdraw this consent within 30 days by contacting the researcher<br>
+      • Photographs will be stored securely and used respectfully
+    </div>
+
+    <div class="pdf-section">
+      <strong>日本語</strong><br><br>
+      私は、日本の瀬戸内海における建築研究フィールドワークの一環として、Lucy Navarroによる写真撮影に同意します。<br><br>
+      以下を理解しています：<br>
+      • 写真は学術研究、出版物、プレゼンテーション、展示会に使用される可能性があります<br>
+      • alucynavarro@gmail.comに連絡することで、出版前に写真を確認することができます<br>
+      • 30日以内に研究者に連絡することで、この同意を撤回できます<br>
+      • 写真は安全に保管され、敬意を持って使用されます
+    </div>
+
+    <div class="pdf-field">
+      <strong>Name / 名前:</strong> <span id="pdfName"></span>
+    </div>
+
+    <div class="pdf-field">
+      <strong>Date / 日付:</strong> <span id="pdfDate"></span>
+    </div>
+
+    <div class="pdf-signature">
+      <strong>Signature / 署名:</strong><br>
+      <img id="pdfSignature" style="max-width: 300px; margin-top: 10px;">
+    </div>
+
+    <div class="pdf-section" style="margin-top: 30px; font-size: 11px;">
+      <strong>Researcher:</strong> Lucy Navarro | Columbia University GSAPP<br>
+      <strong>Website:</strong> islandinfrastructure.io<br>
+      <strong>Contact:</strong> alucynavarro@gmail.com
+    </div>
+  </div>
+
+  <script>
+    // Set today's date as default
+    document.getElementById('date').valueAsDate = new Date();
+
+    // Signature pad setup
+    const canvas = document.getElementById('signaturePad');
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false;
+    let hasSignature = false;
+
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * window.devicePixelRatio;
+      canvas.height = rect.height * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+      canvas.style.width = rect.width + 'px';
+      canvas.style.height = rect.height + 'px';
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    function getPos(e) {
+      const rect = canvas.getBoundingClientRect();
+      const touch = e.touches ? e.touches[0] : e;
+      return {
+        x: touch.clientX - rect.left,
+        y: touch.clientY - rect.top
+      };
+    }
+
+    function startDrawing(e) {
+      e.preventDefault();
+      isDrawing = true;
+      const pos = getPos(e);
+      ctx.beginPath();
+      ctx.moveTo(pos.x, pos.y);
+    }
+
+    function draw(e) {
+      e.preventDefault();
+      if (!isDrawing) return;
+      const pos = getPos(e);
+      ctx.lineTo(pos.x, pos.y);
+      ctx.stroke();
+      hasSignature = true;
+      checkFormValidity();
+    }
+
+    function stopDrawing(e) {
+      e.preventDefault();
+      isDrawing = false;
+    }
+
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseout', stopDrawing);
+    canvas.addEventListener('touchstart', startDrawing);
+    canvas.addEventListener('touchmove', draw);
+    canvas.addEventListener('touchend', stopDrawing);
+
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      hasSignature = false;
+      checkFormValidity();
+    });
+
+    function checkFormValidity() {
+      const name = document.getElementById('name').value.trim();
+      const date = document.getElementById('date').value;
+      const submitBtn = document.getElementById('submitBtn');
+      
+      if (name && date && hasSignature) {
+        submitBtn.disabled = false;
+      } else {
+        submitBtn.disabled = true;
+      }
+    }
+
+    document.getElementById('name').addEventListener('input', checkFormValidity);
+    document.getElementById('date').addEventListener('change', checkFormValidity);
+
+    // Form submission
+    document.getElementById('consentForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const name = document.getElementById('name').value.trim();
+      const date = document.getElementById('date').value;
+      const signatureData = canvas.toDataURL('image/png');
+
+      // Populate PDF content
+      document.getElementById('pdfName').textContent = name;
+      document.getElementById('pdfDate').textContent = date;
+      document.getElementById('pdfSignature').src = signatureData;
+
+      try {
+        const pdfContent = document.getElementById('pdfContent');
+        const pdfCanvas = await html2canvas(pdfContent, {
+          scale: 2,
+          backgroundColor: '#ffffff'
+        });
+
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        
+        const imgData = pdfCanvas.toDataURL('image/png');
+        const imgWidth = 210;
+        const imgHeight = (pdfCanvas.height * imgWidth) / pdfCanvas.width;
+        
+        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+        
+        const filename = `Consent_${name.replace(/\s+/g, '_')}_${date}.pdf`;
+        pdf.save(filename);
+
+        // Show success message
+        document.getElementById('overlay').classList.add('show');
+        document.getElementById('successMessage').classList.add('show');
+
+        // Reset form after 3 seconds
+        setTimeout(() => {
+          document.getElementById('overlay').classList.remove('show');
+          document.getElementById('successMessage').classList.remove('show');
+          document.getElementById('consentForm').reset();
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          hasSignature = false;
+          checkFormValidity();
+          document.getElementById('date').valueAsDate = new Date();
+        }, 3000);
+
+      } catch (error) {
+        console.error('Error generating PDF:', error);
+        alert('Error saving consent form. Please try again.');
+      }
+    });
+  </script>
+</body>
+</html>
